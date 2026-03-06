@@ -1,0 +1,143 @@
+# ======================== Elasticsearch Configuration =========================
+#
+# NOTE: Elasticsearch comes with reasonable defaults for most settings.
+#       Before you set out to tweak and tune the configuration, make sure you
+#       understand what are you trying to accomplish and the consequences.
+#
+# The primary way of configuring a node is via this file. This template lists
+# the most important settings you may want to configure for a production cluster.
+#
+# Please consult the documentation for further information on configuration options:
+# https://www.elastic.co/guide/en/elasticsearch/reference/index.html
+#
+# ---------------------------------- Cluster -----------------------------------
+#
+# Use a descriptive name for your cluster:
+#
+cluster.name: supplychain-logging-es8-dev
+#
+# ------------------------------------ Node ------------------------------------
+#
+# Use a descriptive name for the node:
+#
+node.name: supplychain-logging-es8-node#1
+#
+# Add custom attributes to the node:
+#
+#node.attr.rack: r1
+#
+# ----------------------------------- Paths ------------------------------------
+#
+# Path to directory where to store the data (separate multiple locations by comma):
+#
+path.data: /apps/elasticsearch/data_v8_12
+#
+# Path to log files:
+#
+#path.logs: /path/to/logs
+#
+#path.repo: ["/usr/share/elasticsearch/backup"]
+path.repo: ["/apps/elasticsearch/snapshots_v8_12"]
+
+
+# ----------------------------------- Memory -----------------------------------
+#
+# Lock the memory on startup:
+#
+#bootstrap.memory_lock: true
+#
+# Make sure that the heap size is set to about half the memory available
+# on the system and that the owner of the process is allowed to use this
+# limit.
+#
+# Elasticsearch performs poorly when the system is swapping the memory.
+#
+# ---------------------------------- Network -----------------------------------
+#
+# By default Elasticsearch is only accessible on localhost. Set a different
+# address here to expose this node on the network:
+#
+#network.host: 192.168.0.1
+
+network.bind_host: localhost.com
+network.publish_host: _eno16780032_
+http.compression: true
+
+#
+# By default Elasticsearch listens for HTTP traffic on the first free port it
+# finds starting at 9200. Set a specific HTTP port here:
+#
+http.port: 9201
+transport.port: 9350
+#
+# For more information, consult the network module documentation.
+#
+# --------------------------------- Discovery ----------------------------------
+#
+# Pass an initial list of hosts to perform discovery when this node is started:
+# The default list of hosts is ["127.0.0.1", "[::1]"]
+#
+discovery.seed_hosts: ["node#1:9350","node#2:9350","node#3:9350","node#4:9350"]
+
+#
+# Bootstrap the cluster using an initial set of master-eligible nodes:
+#
+cluster.initial_master_nodes: ["supplychain-logging-es8-node#1", "supplychain-logging-es8-node#2","supplychain-logging-es8-node#3","supplychain-logging-es8-node#4"]
+
+
+#
+# For more information, consult the discovery and cluster formation module documentation.
+#
+# ---------------------------------- Various -----------------------------------
+#
+# Allow wildcard deletion of indices:
+#
+#action.destructive_requires_name: false
+#
+
+
+######## Start Search Guard Demo Configuration ########
+# WARNING: revise all the lines below before you go into production
+searchguard.ssl.transport.pemcert_filepath: certs/node-1.pem
+searchguard.ssl.transport.pemkey_filepath: certs/node-1.key
+searchguard.ssl.transport.pemkey_password: monitoring
+searchguard.ssl.transport.pemtrustedcas_filepath: certs/dev-es8-ca.pem
+searchguard.ssl.transport.enforce_hostname_verification: false
+searchguard.ssl.transport.resolve_hostname: false
+searchguard.ssl.http.enabled: true
+searchguard.ssl.http.pemcert_filepath: certs/node-1.pem
+searchguard.ssl.http.pemkey_filepath: certs/node-1.key
+searchguard.ssl.http.pemkey_password: monitoring
+searchguard.ssl.http.pemtrustedcas_filepath: certs/dev-es8-ca.pem
+searchguard.allow_unsafe_democertificates: true
+searchguard.allow_default_init_sgindex: true
+searchguard.nodes_dn:
+- "CN=dev-elasticsearch-node-1-cert,OU=es,O=es,L=Seoul,C=KR,ST=Seoul"
+- "CN=dev-elasticsearch-node-2-cert,OU=es,O=es,L=Seoul,C=KR,ST=Seoul"
+- "CN=dev-elasticsearch-node-3-cert,OU=es,O=es,L=Seoul,C=KR,ST=Seoul"
+searchguard.authcz.admin_dn:
+- "CN=dev-elasticsearch-admin-cert,OU=es,O=es,L=KR,C=KR,ST=KR"
+
+searchguard.audit.type: internal_elasticsearch
+searchguard.check_snapshot_restore_write_privileges: true
+searchguard.restapi.roles_enabled: ["SGS_ALL_ACCESS"]
+cluster.routing.allocation.disk.threshold_enabled: false
+xpack.security.enabled: false
+xpack.security.transport.ssl.enabled: false
+xpack.security.autoconfiguration.enabled: false
+xpack.monitoring.templates.enabled: false
+######## End Search Guard Demo Configuration ########
+
+xpack.security.enabled: false
+xpack.security.autoconfiguration.enabled: false
+xpack.monitoring.enabled: true
+xpack.ml.enabled: false
+xpack.watcher.enabled: false
+
+
+#Max Clause count
+indices.query.bool.max_clause_count: 50000
+
+#reindex.remote.whitelist: "otherhost:9200, another:9200, 127.0.10.*:9200, localhost:*
+reindex.remote.whitelist: "*:9200"
+
