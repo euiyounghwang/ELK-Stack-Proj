@@ -164,10 +164,10 @@ def work(es_source_client, es_target_client):
                 is_not_exist_lists.append(each_index)
 
     print('\n')
-    print('-'*50)
-    if len(is_not_exist_lists) > 0:
-        print(f"Not exist lists : {json.dumps(is_not_exist_lists, indent=2)}")
-    print(f"Validate the number of docs : {json.dumps(different_doc, indent=2)}")
+    # print('-'*50)
+    # if len(is_not_exist_lists) > 0:
+    #     print(f"Not exist lists : {json.dumps(is_not_exist_lists, indent=2)}")
+    # print(f"Validate the number of docs : {json.dumps(different_doc, indent=2)}")
 
     ''' *** df ***'''
     all_docs_df.update({"Index_Name" : index_column})
@@ -181,6 +181,15 @@ def work(es_source_client, es_target_client):
     print(df.head(10))
     ''' *** df ***'''
 
+    print('\n\n')
+    df = pd.DataFrame({
+        'source_es_cluster' : list(set(source_cluter)),
+        'source_total_cnt' : [f"{sum(source_cnt):,}"],
+        'target_es_cluster' : list(set(target_cluter)),
+        'target_total_cnt' : [f"{sum(target_cnt):,}"],
+        'is_same?' : ['Same' if sum(source_cnt) == sum(target_cnt) else 'Different']
+    })
+    print(df.head(100))
     
     ''' clear output file'''
     output_clear()
