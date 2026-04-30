@@ -40,14 +40,9 @@ class Search():
         # self.es_client = Elasticsearch(hosts=_host, headers=self.get_headers(), basic_auth=('elastic','gsaadmin'), timeout=self.timeout)
     
     
-    def get_es_instance(self):
-        return self.es_client
-    
-    
     def close(self):
         self.es_client.close()
-        
-    
+
     def get_headers(self):
         ''' Elasticsearch Header '''
         return {
@@ -55,7 +50,24 @@ class Search():
             'Authorization' : '{}'.format(os.getenv('BASIC_AUTH')),
             # 'Connection': 'close'
         }
-        
+    
+
+    def get_es_instance(self):
+        return self.es_client
+    
+    
+    def get_es_client_health(self):
+        return self.es_client.cat.health(format="json")
+    
+    
+    def get_es_indices_list(self):
+        row_indices_list = list(self.es_client.indices.get("*").keys())
+        return [each_indices for each_indices in row_indices_list if '.' not in each_indices and ('wx_' in each_indices or 'om_' in each_indices)]
+    
+
+    def get_mappings_json(self, index_name):
+        return self.es_client.indices.get_mapping(index=index_name).get(index_name)
+
     
     def Get_Buffer_list_Length(self, docs):
         """
