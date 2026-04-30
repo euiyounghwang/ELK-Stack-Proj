@@ -170,7 +170,6 @@ def work():
             print(original_data)
             """
             
-            """
             key = Fernet.generate_key()
 
             cipher_suite = Fernet(key)
@@ -179,11 +178,11 @@ def work():
             plain_text = cipher_suite.decrypt(cipher_text)
 
             print("encrypt_text : ", cipher_text)
-            print("decrypt_text : ", plain_text.decode('utf-8'))
-            """
-            print(json.dumps(es_client.get_mappings_json(index_name=each_indices)))
-            print("--" *10)
-            print("\n")
+            # print("decrypt_text : ", plain_text.decode('utf-8'))
+            
+            # print(json.dumps(es_client.get_mappings_json(index_name=each_indices)))
+            # print("--" *10)
+            # print("\n")
         
     except Exception as e:
         logging.error(e)
