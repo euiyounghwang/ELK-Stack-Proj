@@ -1,5 +1,5 @@
 
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, NotFoundError
 import json
 import os
 from datetime import datetime
@@ -75,6 +75,10 @@ class Search():
         return self.es_client
     
     
+    def get_es_info(self):
+        return self.es_client.info()
+
+
     def get_es_client_health(self):
         return self.es_client.cat.health(format="json")
     
@@ -86,6 +90,17 @@ class Search():
 
     def get_mappings_json(self, index_name):
         return self.es_client.indices.get_mapping(index=index_name).get(index_name)
+
+
+    def write_document(self, doc):
+        ''' 
+        es.indices.create(index='my_index')
+        result = es.search(index='my_index', body={'query': {'match': {'title': 'Python'}}})
+        es.update(index='my_index', id='document_id', body={'doc': {'title': 'Updated Title'}})
+        es.delete(index='my_index', id='document_id')
+        '''
+        # doc = {'title': 'Python Elasticsearch Guide', 'content': 'This is a beginner\'s guide...'}
+        self.es_client.index(index='my_index', body=doc)
 
     
     def Get_Buffer_list_Length(self, docs):
@@ -119,7 +134,19 @@ class Search():
 
         return self.max_len
     
+    
+    def try_exists_index(self, index):
+        try:
+            if self.es_client.indices.exists(index):
+                return True
+            return False
+                
+        except Exception as e:
+            # logging.error(e)
+            print(e)
+            pass
         
+
     def create_index(self, _index):
         ''' sample index & mapping '''
         print(self.es_client)
