@@ -7,11 +7,15 @@ import time
 from datetime import datetime
 from flask import Flask
 from threading import Thread
+import os
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 
+# path = os.path.dirname(os.path.abspath(__file__)) + '/output'
+run_path = os.path.dirname(os.path.abspath(__file__))
+path = run_path + '/output/mappings'
 
 ''' Tracking thread_alert_message '''
 tracking_dict = {
@@ -97,7 +101,6 @@ json_test = {
 }
 
 
-
 class MD5_Cls:
     """The MD5, defined in RFC 1321, is a hash algorithm to turn inputs into a fixed 128-bit (16 bytes) length of the hash value."""
 
@@ -149,8 +152,15 @@ def run_hash():
         pass
 
 
-def BatchJob_Logic(params_es_host) -> None:
+def BatchJob_Logic(params_es_host, env="test") -> None:
     try:
+
+        ''' Dir/Path checking..'''
+        # Create directory (and parent directories if missing)
+        os.makedirs(f"{path}/{env}", exist_ok=True)
+        # current_file_path = f"{path}/mappings/example.txt"
+        # if os.path.exists(current_file_path):
+        #     os.remove(current_file_path)
        
         # Checking the hash
         # run_hash()
@@ -165,6 +175,10 @@ def BatchJob_Logic(params_es_host) -> None:
         # Get mappings for the particular ES Indices
         for each_indices in es_indices_list:
             # print(es_client.get_mappings_json(index_name=each_indices))
+
+            current_file_path = f"{path}/{env}/{each_indices}"
+            if os.path.exists(current_file_path):
+                os.remove(current_file_path)
             
             print("--" *10)
             print(f"Indices Name : {each_indices}")
@@ -195,31 +209,54 @@ def BatchJob_Logic(params_es_host) -> None:
             print(json.dumps(es_client.get_mappings_json(index_name=each_indices)))
             print("--" *10)
             print("\n")
+            
+            ''' Export files'''
+            with open(f"{current_file_path}", "a") as file:
+                file.write(f"# ES Host : {params_es_host}, ES Indices name : {each_indices}" + "\n")
+                file.write(json.dumps(es_client.get_mappings_json(index_name=each_indices)) + "\n\n")
 
     except Exception as e:
         logging.error(e)
         pass    
 
 
-def work(interval):
+def main_logic_mappings():
+    ''' Load config Json file and run to get the mappings based on config info'''
+    try:
+        ''' main logic'''
+        for each_json in Util.get_json_load(f"{run_path}/mappings-hash-script-config.json"):
+            # print(json.dumps(each_json, indent=2))
+            print("Performing..")
+            ''' perform the bachjob to collect the mappings'''
+            BatchJob_Logic(params_es_host=each_json.get("service")[0].get("service"), env=each_json.get("env").lower())
+    except Exception as e:
+                logging.error(e)
+
+
+def work(interval, dev_mode):
     ''' main logic'''
 
-    while True:
-        try:
-            print("Performing..")
+    if dev_mode:
+       ''' Call main logcin function'''
+       main_logic_mappings()
+            
+    else:
+        while True:
+            try:
+               ''' Call main logcin function'''
+               main_logic_mappings()
+            
+            except (KeyboardInterrupt, SystemExit):
+                logging.info("#Interrupted..")
+            except Exception as e:
+                logging.error(e)
+                pass
 
-            ''' perform the bachjob to collect the mappings'''
-            BatchJob_Logic(params_es_host="http://localhost:9202")
-        
-        except (KeyboardInterrupt, SystemExit):
-            logging.info("#Interrupted..")
-        except Exception as e:
-            logging.error(e)
-            pass
+            print(f"Wait for {interval} Seconds to get the mappings..")
+            
+            time.sleep(interval)
 
-        print(f"Wait for {interval} Seconds to get the mappings..")
-        
-        time.sleep(interval)
+
 
 
 app = Flask(__name__)
@@ -245,6 +282,9 @@ if __name__ == "__main__":
     Get the mappings
     Locationtion to run the serivce as background : /home/<user>/monitoring/reindex & source .venv/bin/activate
     '''
+
+    dev_mode=True
+    # dev_mode=False
     
     gloabal_default_timezone = Util.get_datetime()
     
@@ -252,7 +292,7 @@ if __name__ == "__main__":
     
     try:
         T = []
-        th1 = Thread(target=work, args=(60,))
+        th1 = Thread(target=work, args=(60,dev_mode,))
         th1.daemon = True
         th1.start()
         T.append(th1)
@@ -261,10 +301,10 @@ if __name__ == "__main__":
         ''' Flask at first run: Do not use the development server in a production environment '''
         ''' For deploying an application to production, one option is to use Waitress, a production WSGI server. '''
         # app.run(host="0.0.0.0", port=int(port)-4000)
-        from waitress import serve
-        _flask_port = 9298
-        serve(app, host="0.0.0.0", port=_flask_port)
-        logging.info(f"# Flask App's Port : {_flask_port}")
+        # from waitress import serve
+        # _flask_port = 9298
+        # serve(app, host="0.0.0.0", port=_flask_port)
+        # logging.info(f"# Flask App's Port : {_flask_port}")
 
         # wait for all threads to terminate
         for t in T:
@@ -275,4 +315,4 @@ if __name__ == "__main__":
         logging.info("# Interrupted..")
 
     finally:
-        logging.info("Standalone Prometheus Exporter Server exited..!")
+        logging.info("Standalone BatchJob Mapping Collector Server exited..!")

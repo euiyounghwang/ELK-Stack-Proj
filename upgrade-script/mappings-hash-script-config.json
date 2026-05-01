@@ -1,0 +1,13 @@
+[
+    {
+        "env": "Localhost",
+        "service": [
+            {
+                "service_name": "ES",
+                "service_client" : "es",
+                "service": "http://localhost:9201",
+                "basic_auth" : "test"
+            }
+        ]
+    }
+]
