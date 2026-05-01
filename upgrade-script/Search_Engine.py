@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 import pandas as pd
 import re
+import pytz
 import logging
 from dotenv import load_dotenv
 
@@ -12,6 +13,24 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 ''' pip install python-dotenv'''
 load_dotenv(dotenv_path="../.env") # will search for .env file in local folder and load variables 
+
+
+
+class Util:
+
+    def __init__(self):
+        pass
+                
+    @staticmethod
+    def get_json_load(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+        return data
+    
+    @staticmethod
+    def get_datetime():
+        return datetime.now(tz=pytz.timezone('US/Eastern'))
+    
 
 
 class Search():

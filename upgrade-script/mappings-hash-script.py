@@ -1,12 +1,23 @@
 import json
 from hashlib import md5
-from Search_Engine import Search
+from Search_Engine import Search, Util
 import base64
 from cryptography.fernet import Fernet
-
+import time
+from datetime import datetime
+from flask import Flask
+from threading import Thread
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+
+
+
+''' Tracking thread_alert_message '''
+tracking_dict = {
+    
+}
+
 
 '''
 # Create Indices
@@ -86,6 +97,7 @@ json_test = {
 }
 
 
+
 class MD5_Cls:
     """The MD5, defined in RFC 1321, is a hash algorithm to turn inputs into a fixed 128-bit (16 bytes) length of the hash value."""
 
@@ -137,14 +149,13 @@ def run_hash():
         pass
 
 
-
-def work():
+def BatchJob_Logic(params_es_host) -> None:
     try:
        
         # Checking the hash
         # run_hash()
 
-        es_client = Search(host="http://localhost:9201")
+        es_client = Search(host=params_es_host)
         print(json.dumps(es_client.get_es_client_health(), indent=2))
 
         # Get indices list
@@ -170,6 +181,7 @@ def work():
             print(original_data)
             """
             
+            """
             key = Fernet.generate_key()
 
             cipher_suite = Fernet(key)
@@ -178,27 +190,89 @@ def work():
             plain_text = cipher_suite.decrypt(cipher_text)
 
             print("encrypt_text : ", cipher_text)
-            # print("decrypt_text : ", plain_text.decode('utf-8'))
-            
-            # print(json.dumps(es_client.get_mappings_json(index_name=each_indices)))
-            # print("--" *10)
-            # print("\n")
-        
+            print("decrypt_text : ", plain_text.decode('utf-8'))
+            """
+            print(json.dumps(es_client.get_mappings_json(index_name=each_indices)))
+            print("--" *10)
+            print("\n")
+
     except Exception as e:
         logging.error(e)
-        pass
+        pass    
+
+
+def work(interval):
+    ''' main logic'''
+
+    while True:
+        try:
+            print("Performing..")
+
+            ''' perform the bachjob to collect the mappings'''
+            BatchJob_Logic(params_es_host="http://localhost:9202")
+        
+        except (KeyboardInterrupt, SystemExit):
+            logging.info("#Interrupted..")
+        except Exception as e:
+            logging.error(e)
+            pass
+
+        print(f"Wait for {interval} Seconds to get the mappings..")
+        
+        time.sleep(interval)
+
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    # return render_template('./index.html', host_name=socket.gethostname().split(".")[0], linked_port=port, service_host=env_name)
+    return {
+        "app" : "mappings-hash-script.py",
+        "started_time" : datetime.now(),
+        "tools": [
+            {
+                "message" : "Collect the mappings from env's",
+                "tracking" : tracking_dict
+            }
+        ]
+    }
 
 
 if __name__ == "__main__":
     
     '''
-    Set the number of replicas
-    (.venv) ➜  python ./upgrade-script/update-replica-script.py --ts http://target_es_cluster:9201
+    Get the mappings
+    Locationtion to run the serivce as background : /home/<user>/monitoring/reindex & source .venv/bin/activate
     '''
-     
-    # --
-    # Only One process we can use due to 'Global Interpreter Lock'
-    # 'Multiprocessing' is that we can use for running with multiple process
-    # --
-    work()
+    
+    gloabal_default_timezone = Util.get_datetime()
+    
+    logging.info("Standalone BatchJob Mapping Collector Server Started..! [{}]".format(Util.get_datetime()))
+    
+    try:
+        T = []
+        th1 = Thread(target=work, args=(60,))
+        th1.daemon = True
+        th1.start()
+        T.append(th1)
+                
+        ''' Expose this app to acesss index.html (./templates/index.html)'''
+        ''' Flask at first run: Do not use the development server in a production environment '''
+        ''' For deploying an application to production, one option is to use Waitress, a production WSGI server. '''
+        # app.run(host="0.0.0.0", port=int(port)-4000)
+        from waitress import serve
+        _flask_port = 9298
+        serve(app, host="0.0.0.0", port=_flask_port)
+        logging.info(f"# Flask App's Port : {_flask_port}")
 
+        # wait for all threads to terminate
+        for t in T:
+            while t.is_alive():
+                t.join(0.5)
+
+    except (KeyboardInterrupt, SystemExit):
+        logging.info("# Interrupted..")
+
+    finally:
+        logging.info("Standalone Prometheus Exporter Server exited..!")
