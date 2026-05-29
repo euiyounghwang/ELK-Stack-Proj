@@ -87,6 +87,15 @@ class Search():
         row_indices_list = list(self.es_client.indices.get("*").keys())
         return [each_indices for each_indices in row_indices_list if '.' not in each_indices and ('wx_' in each_indices or 'om_' in each_indices)]
     
+    
+    def get_cat_nodes_stat(self, properties=["ip", "name", "node.role", "heap.percent"]):
+        # Returns a list of dictionaries with specific node metrics
+        return self.es_client.cat.nodes(format="json", h=properties)
+    
+
+    def get_nodes_stats(self):
+        return self.es_client.nodes.stats()
+
 
     def get_mappings_json(self, index_name):
         return self.es_client.indices.get_mapping(index=index_name).get(index_name)
