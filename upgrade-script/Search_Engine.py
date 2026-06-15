@@ -294,7 +294,20 @@ class Search():
             To address this, you need to explicitly set a smaller size parameter within the source object of your _reindex API cal
             '''
             for each_raw in raw_json:
-
+                ''' Format 
+                # 3. Format into action dictionaries required by the bulk helper
+                actions = [
+                    {
+                        "_index": "my-vector-index",
+                        "_id": doc["id"],
+                        "_source": {
+                            "text_content": doc["text"],
+                            "my_vector": doc["vector"]
+                        }
+                    }
+                    for doc in documents_data
+                ]
+                '''
                 ''' ES v.5 header'''
                 if version < 8:
                     # _header = {'index': {'_index': _index, '_type' : _type, "_id" : each_raw['_id'], "op_type" : "create"}}
