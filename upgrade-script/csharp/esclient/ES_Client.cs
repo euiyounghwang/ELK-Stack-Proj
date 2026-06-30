@@ -203,11 +203,12 @@ public class ElasticsearchConnection
 
                 // Load the CA certificate
                 var caCert = new X509Certificate2(caCertPath);
-
+                
                 // By default, the X509Certificate2.Thumbprint property uses the SHA-1 algorithm to compute the hash. 
                 // The X509Certificate2.Thumbprint property in C# explicitly returns the SHA-1 hash of the certificate. But elasticsearch returns SHA-2 has of the certificate.
                 // Insteady of the Thumbprint property, we can add the below logic to compare the certifcate between local ca certicate and remote ES cluster's certs
 
+                // #1
                 // Distinguished name (DN) is a term that describes the identifying information in a certificate and is part of the certificate itself.
                 // Check if the certificate from the remote secure ES cluster is the expected CA 
                 if (certificate.Issuer == caCert.Subject)
@@ -217,6 +218,15 @@ public class ElasticsearchConnection
                 }
 
                 return false; // Reject if validation fails
+
+                // #2
+                // using var customChain = new X509Chain();
+                // customChain.ChainPolicy.ExtraStore.Add(caCert);
+                // customChain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+                // customChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+
+                // using var serverCert2 = new X509Certificate2(certificate);
+                // return customChain.Build(serverCert2);
             });
 
         // Create the Elasticsearch client
