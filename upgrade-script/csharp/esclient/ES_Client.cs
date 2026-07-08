@@ -23,6 +23,7 @@ using Elasticsearch.Net;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
 using DotNetEnv;
+using System.Net.Security;
 
 // dotnet new console
 // dotnet add package NEST --version 7.17.4
@@ -211,13 +212,13 @@ public class ElasticsearchConnection
                 // #1
                 // Distinguished name (DN) is a term that describes the identifying information in a certificate and is part of the certificate itself.
                 // Check if the certificate from the remote secure ES cluster is the expected CA 
-                if (certificate.Issuer == caCert.Subject)
-                {
-                    Console.WriteLine($"caCert : [{caCert}]");
-                    return true;
-                }
+                // if (certificate.Issuer == caCert.Subject)
+                // {
+                //     Console.WriteLine($"caCert : [{caCert}]");
+                //     return true;
+                // }
 
-                return false; // Reject if validation fails
+                // return false; // Reject if validation fails
 
                 // #2
                 // using var customChain = new X509Chain();
@@ -227,6 +228,25 @@ public class ElasticsearchConnection
 
                 // using var serverCert2 = new X509Certificate2(certificate);
                 // return customChain.Build(serverCert2);
+
+                // #3
+                // using System.Net.Security;
+                if (sslPolicyErrors  == SslPolicyErrors.RemoteCertificateChainErrors)
+                {
+                    using var customRootCa = new X509Certificate2(caCert);
+                    using var chainCustom = new X509Chain();
+                    
+                    // Configure the chain to only trust our explicit CA file
+                    chainCustom.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+                    chainCustom.ChainPolicy.CustomTrustStore.Add(customRootCa);
+                    chainCustom.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+
+                    // Re-evaluate the server certificate against our temporary trust store
+                    return chainCustom.Build((X509Certificate2)certificate);
+                }
+
+                return false;
+
             });
 
         // Create the Elasticsearch client
