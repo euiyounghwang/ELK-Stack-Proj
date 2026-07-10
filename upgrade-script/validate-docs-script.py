@@ -125,9 +125,11 @@ def work(es_source_client, es_target_client):
             is_exist = try_exists_index(es_t_client, each_index)
             logging.info(f"validate index [{each_index}] exsits : results is {is_exist}")
             ''' check the number of count'''
-            res_count_source = es_client.count(index=each_index, body=query)["count"]
+            # res_count_source = es_client.count(index=each_index, body=query)["count"]
+            res_count_source = int(es_client.cat.indices(index=each_index,h=["docs.count"]))
             if is_exist:
-                res_count_target = es_t_client.count(index=each_index, body=query)["count"]
+                # res_count_target = es_t_client.count(index=each_index, body=query)["count"]
+                res_count_target =  int(es_t_client.cat.indices(index=each_index,h=["docs.count"]))
             
             index_column.append(each_index)
 
