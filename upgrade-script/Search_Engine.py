@@ -95,6 +95,16 @@ class Search():
 
     def get_nodes_stats(self):
         return self.es_client.nodes.stats()
+    
+
+    def get_indices_count(self, each_index):
+        """
+        Args:
+            each_index : The name of indiecs
+        Return:
+            docs.count as a int
+        """
+        return self.es_client.cat.indices(index=each_index,h=["docs.count"])
 
 
     def get_mappings_json(self, index_name):
