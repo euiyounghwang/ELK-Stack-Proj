@@ -1,4 +1,5 @@
 version: '3'
+# docker system prune -a (clearn images, volumes, and others)
 #docker-compose -f ./docker-compose.yml up or docker-compose up
 name: elk-upgrade-repository
 services:
@@ -131,7 +132,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data # Persist data
+      - data:/usr/share/elasticsearch/data # Persist data
     ports:
       - "9200:9200"
       - "9300:9300"
