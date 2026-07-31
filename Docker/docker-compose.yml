@@ -1,5 +1,6 @@
 version: '3'
 # docker system prune -a (clearn images, volumes, and others)
+# C:\Users\<user_name>\AppData\Local\Docker\wsl\disk\docker_data.vhdx
 #docker-compose -f ./docker-compose.yml up or docker-compose up
 name: elk-upgrade-repository
 services:
