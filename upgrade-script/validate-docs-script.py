@@ -1,6 +1,3 @@
-
-
-
 # -*- coding: utf-8 -*-
 import sys
 import json
@@ -119,30 +116,28 @@ def work(es_source_client, es_target_client):
     source_cluter, target_cluter, index_column, index_value, source_cnt, target_cnt = [], [], [], [], [], []
     for each_index in source_idx_lists:
         ''' exclude system indices in the source cluster such as .monitoring-es-7-2024.07.12'''
-        if '.' not in each_index:
+        if '.' not in each_index and ("wx_" in each_index or "om_" in each_index):
             res_count_source, res_count_target = 0, 0
             ''' compare each index between source cluster and target cluster'''
             is_exist = try_exists_index(es_t_client, each_index)
             logging.info(f"validate index [{each_index}] exsits : results is {is_exist}")
             ''' check the number of count'''
-            # res_count_source = es_client.count(index=each_index, body=query)["count"]
-            res_count_source = int(es_client.cat.indices(index=each_index,h=["docs.count"]))
+            res_count_source = es_client.count(index=each_index, body=query)["count"]
             if is_exist:
-                # res_count_target = es_t_client.count(index=each_index, body=query)["count"]
-                res_count_target =  int(es_t_client.cat.indices(index=each_index,h=["docs.count"]))
+                res_count_target = es_t_client.count(index=each_index, body=query)["count"]
             
             index_column.append(each_index)
 
-            if res_count_source > res_count_target:
+            if res_count_source == res_count_target:
                 different_doc.append({
                                         each_index : {
                                             "source_docs" : "%s" % res_count_source,
                                             "target_docs" : "%s" % res_count_target,
-                                             "count" : "Differ"
+                                             "count" : "Same"
                                             }
                                     }
                                 )
-                index_value.append(False)
+                index_value.append(True)
             else:
                 different_doc.append({
                                         each_index : {
@@ -152,7 +147,7 @@ def work(es_source_client, es_target_client):
                                             }
                                     }
                             )
-                index_value.append(True)
+                index_value.append(False)
 
             ''' es cluster '''
             source_cluter.append(es_client)
@@ -166,10 +161,10 @@ def work(es_source_client, es_target_client):
                 is_not_exist_lists.append(each_index)
 
     print('\n')
-    # print('-'*50)
-    # if len(is_not_exist_lists) > 0:
-    #     print(f"Not exist lists : {json.dumps(is_not_exist_lists, indent=2)}")
-    # print(f"Validate the number of docs : {json.dumps(different_doc, indent=2)}")
+    #print('-'*50)
+    #if len(is_not_exist_lists) > 0:
+    #    print(f"Not exist lists : {json.dumps(is_not_exist_lists, indent=2)}")
+    #print(f"Validate the number of docs : {json.dumps(different_doc, indent=2)}")
 
     ''' *** df ***'''
     all_docs_df.update({"Index_Name" : index_column})
@@ -180,7 +175,7 @@ def work(es_source_client, es_target_client):
     all_docs_df.update({"Reindex Completed" : index_value})
 
     df = pd.DataFrame.from_dict(all_docs_df)
-    print(df.head(10))
+    print(df.head(100))
     ''' *** df ***'''
 
     print('\n\n')
@@ -192,6 +187,7 @@ def work(es_source_client, es_target_client):
         'is_same?' : ['Same' if sum(source_cnt) == sum(target_cnt) else 'Different']
     })
     print(df.head(100))
+
     
     ''' clear output file'''
     output_clear()
@@ -208,18 +204,27 @@ def work(es_source_client, es_target_client):
 if __name__ == "__main__":
     
     '''
-    (.venv) ➜  python ./upgrade-script/validate-docs-script.py --es http://source_es_cluster:9200 ---ts http://target_es_cluster:9201
+    (.venv) ➜  python ./upgrade-script/validate-docs-script.py --es http://source_es_cluster:9200 --ts http://target_es_cluster:9201
+    (.venv) ➜  python ./upgrade-script/validate-docs-script.py --es http://source_es_cluster:9200 --ts http://target_es_cluster:9201 --t_auth base_encode_auth_value
     '''
     parser = argparse.ArgumentParser(description="Index into Elasticsearch using this script")
     parser.add_argument('-e', '--es', dest='es', default="http://localhost:9200", help='host source')
     parser.add_argument('-t', '--ts', dest='ts', default="http://localhost:9201", help='host target')
+    parser.add_argument('-t_auth', '--t_auth', dest='t_auth', required=False, help='basic authentications')
     args = parser.parse_args()
-    
+
     if args.es:
         es_source_host = args.es
         
     if args.ts:
         es_target_host = args.ts
+
+    if args.t_auth:
+        # dotenv.set_key(dotenv_file, "BASIC_AUTH", "Basic {}".format(args.t_auth))
+        os.environ["BASIC_AUTH"] = "Basic {}".format(args.t_auth)
+
+    print(os.getenv('BASIC_AUTH'))
+    # exit(1)
         
     # --
     # Only One process we can use due to 'Global Interpreter Lock'
