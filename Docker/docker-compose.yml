@@ -1,6 +1,8 @@
 version: '3'
 # docker system prune -a (clearn images, volumes, and others)
 # C:\Users\<user_name>\AppData\Local\Docker\wsl\disk\docker_data.vhdx
+# docker system prune -a --volumes
+# docker builder prune -a
 #docker-compose -f ./docker-compose.yml up or docker-compose up
 name: elk-upgrade-repository
 services:
@@ -78,6 +80,11 @@ services:
 
   fn-es8:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"  # 파일당 최대 10MB
+        max-file: "3"    # 최대 3개까지만 유지
     container_name: fn-es8
     restart: always
     environment:
@@ -105,6 +112,11 @@ services:
 
   fn-kibana8:
     image: docker.elastic.co/kibana/kibana:8.8.0
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"   # 로그 파일 1개당 최대 10MB
+        max-file: "3"     # 최대 3개까지만 보관 (총 30MB 제한)
     container_name: fn-kibana8
     restart: always
     environment:
@@ -156,6 +168,11 @@ services:
 
   fn-es:
     image: fn-es:omni_es
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"   # 로그 파일 1개당 최대 10MB
+        max-file: "3"     # 최대 3개까지만 보관 (총 30MB 제한)
     container_name: fn-es
     restart: always
     build:
@@ -212,6 +229,11 @@ services:
   
   fn-kibana:
     image: docker.elastic.co/kibana/kibana:5.6.4
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"   # 로그 파일 1개당 최대 10MB
+        max-file: "3"     # 최대 3개까지만 보관 (총 30MB 제한)
     container_name: fn-kibana
     restart: always
     build:
