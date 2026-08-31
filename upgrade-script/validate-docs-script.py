@@ -201,7 +201,8 @@ def work(es_source_client, es_target_client):
 
     print('\n\n')
     if not real_time:
-        print('Since data is being processed in real-time across both ESv5 and ESv8, this script gets the document counts for each index as they stood one hour ago using "ADDTTS" field\n\n')
+        print('** Since data is being processed in real-time across both ESv5 and ESv8, this script gets the document counts for each index as they stood one hour ago using "ADDTTS" field')
+        print('** When comparing data from an hour ago, document counts may temporarily differ due to record deletions; please try running the comparision script again when doc counts is differ\n\n')
 
     df = pd.DataFrame({
         'source_es_cluster' : list(set(source_cluter)),
