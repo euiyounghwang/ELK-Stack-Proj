@@ -231,6 +231,13 @@ if __name__ == "__main__":
     '''
     (.venv) ➜  python ./upgrade-script/validate-docs-script.py --es http://source_es_cluster:9200 --ts http://target_es_cluster:9201
     (.venv) ➜  python ./upgrade-script/validate-docs-script.py --es http://source_es_cluster:9200 --ts http://target_es_cluster:9201 --t_auth base_encode_auth_value
+
+    --
+    You cannot directly compare records from specific indices across ESv5 and ESv8 clusters. 
+    To perform a comparison, you must retrieve the records from indices where the document counts do not match and compare them manually.
+    When comparing data from an hour ago, document counts may temporarily differ due to record deletions; please try running the process again.
+    --
+
     '''
     parser = argparse.ArgumentParser(description="Index into Elasticsearch using this script")
     parser.add_argument('-e', '--es', dest='es', default="http://localhost:9200", help='host source')
