@@ -70,12 +70,32 @@ def work(es_source_client, es_target_client):
     es_t_client = es_obj_t.get_es_instance()
 
     ''' compare all records with match_all '''
-    query = {
-        # "_source": False,
-	    'query': {
-    	    'match_all': {}
-        }
+    query_match_all = {
+       "query" : {
+          "match_all" : {}
+       }
     }
+    query_older_than_an_hour = {
+        # "_source": False,
+        #    'query': {
+        #    'match_all': {}
+        #}
+        "query": {
+            "bool": {
+                "must": [
+                 {
+                   "range": {
+                      "ADDTS": {
+                        "lte": "now-1h",
+                     }
+                  }
+             }
+          ]
+         }
+      }
+    }
+
+    query = query_match_all if real_time else query_older_than_an_hour
 
     ''' compare all records with this condition '''
     '''
@@ -210,6 +230,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Index into Elasticsearch using this script")
     parser.add_argument('-e', '--es', dest='es', default="http://localhost:9200", help='host source')
     parser.add_argument('-t', '--ts', dest='ts', default="http://localhost:9201", help='host target')
+    parser.add_argument('-r_time', '--r_time', dest='r_time', default="False", required=False, help='is real-time?')
     parser.add_argument('-t_auth', '--t_auth', dest='t_auth', required=False, help='basic authentications')
     args = parser.parse_args()
 
@@ -223,9 +244,15 @@ if __name__ == "__main__":
         # dotenv.set_key(dotenv_file, "BASIC_AUTH", "Basic {}".format(args.t_auth))
         os.environ["BASIC_AUTH"] = "Basic {}".format(args.t_auth)
 
+    if args.r_time:
+        real_time = args.r_time
+
+
     print(os.getenv('BASIC_AUTH'))
     # exit(1)
-        
+
+    real_time = True if str(real_time).upper() == "TRUE" else False
+
     # --
     # Only One process we can use due to 'Global Interpreter Lock'
     # 'Multiprocessing' is that we can use for running with multiple process
