@@ -142,9 +142,10 @@ def work(es_source_client, es_target_client):
             is_exist = try_exists_index(es_t_client, each_index)
             logging.info(f"validate index [{each_index}] exsits : results is {is_exist}")
             ''' check the number of count'''
-            res_count_source = es_client.count(index=each_index, body=query)["count"]
+            res_count_source = es_client.count(index=each_index, preference="_primary", body=query)["count"]
             if is_exist:
-                res_count_target = es_t_client.count(index=each_index, body=query)["count"]
+                # res_count_target = es_t_client.count(index=each_index, body=query)["count"]
+                res_count_target = es_t_client.count(index=each_index, preference="user_session_abc123", body=query)["count"]
             
             index_column.append(each_index)
 
@@ -199,6 +200,9 @@ def work(es_source_client, es_target_client):
     ''' *** df ***'''
 
     print('\n\n')
+    if not real_time:
+        print('Since data is being processed in real-time across both ESv5 and ESv8, this script gets the document counts for each index as they stood one hour ago using "ADDTTS" field\n\n')
+
     df = pd.DataFrame({
         'source_es_cluster' : list(set(source_cluter)),
         'source_total_cnt' : [f"{sum(source_cnt):,}"],
