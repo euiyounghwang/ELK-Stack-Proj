@@ -42,9 +42,10 @@ def work(es_source_client, index_name):
         #     print("The file does not exist")
 
     
-    def export_file(query_ids_from_es):
+    def export_file(index, query_ids_from_es):
         ''' export to file '''
         with open(f"{file_output}", "a") as f:
+            f.write(f"#{index}" + '\n')
             for k in query_ids_from_es:
                 f.write(f"{k}" + '\n')
               
@@ -139,7 +140,7 @@ def work(es_source_client, index_name):
 
     query_ids_from_es = list(set(r['_id'] for r in response))
     query_ids_from_es.sort()
-    export_file(query_ids_from_es)
+    export_file(index, query_ids_from_es)
 
     print('-'*50)
     print(f"docs : {len(query_ids_from_es)}")

@@ -41,8 +41,11 @@ ES_Merged_Json = {}
 }
 """
 
+IDX_NAME = None
+
 def read_files(file_output, version):
     logging.info(f"Output Path : {file_output}, version : {version}")
+    global IDX_NAME
     with open(file_output, "r", encoding="utf-8") as file:
         # ids = file.read()
         while True:
@@ -50,6 +53,10 @@ def read_files(file_output, version):
             if not ids:  # Evaluates to True when line == ""
                 break
             # print(ids)
+            if '#' in ids:
+                IDX_NAME = ids.strip().replace("#","")
+                continue
+
             if version == "ESv5":
                 # ESv5_Json.update({ids.strip() : "O"})
                 ESv5_list.append(ids.strip())
@@ -101,8 +108,9 @@ def work():
         logging.info(json.dumps(ES_Merged_Json, indent=2))
 
         ''' Generate list'''
-        ids_list, df_es_v5, df_es_v8 = [], [], []
+        idx_name, ids_list, df_es_v5, df_es_v8 = [], [], [], []
         for k, v in ES_Merged_Json.items():
+            idx_name.append(IDX_NAME)
             ids_list.append(k)
             df_es_v5.append(v.get("ESv5"))
             df_es_v8.append(v.get("ESv8"))
@@ -113,6 +121,7 @@ def work():
 
         ''' Transform Json to Dataframe'''
         data = {
+            'index_name' : idx_name,
             'ids' : ids_list,
             'ESv5_Exists' : df_es_v5,
             'ESv8_Exists' : df_es_v8
