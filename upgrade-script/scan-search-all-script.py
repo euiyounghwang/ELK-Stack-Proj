@@ -1,6 +1,3 @@
-
-
-
 # -*- coding: utf-8 -*-
 import sys
 import json
@@ -23,13 +20,16 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 
 path = os.path.dirname(os.path.abspath(__file__)) + '/output'
-file_output = path + "/Scan-IDs"
+# file_output = path + "/Scan-IDs"
+# file_output = path
 
 
 def work(es_source_client, index_name):
     '''
     Extract all ids via scan API for a mount of records
     '''
+    file_output = path + "/Export_" + version
+    print(f"Output Path : {file_output}")
 
     def output_clear():
         if not os.path.exists(path):
@@ -151,12 +151,16 @@ def work(es_source_client, index_name):
 if __name__ == "__main__":
     
     '''
-    (.venv) ➜  python ./upgrade-script/scan-search-all-script.py --es http://source_es_cluster:9200 --index test
-
+    # Extract Ids from the source cluser
+    python ./upgrade-script/scan-search-all-script.py --es http://source_es_cluster:9200 --index test --version ESv5
+    python ./upgrade-script/scan-search-all-script.py --es https://source_es_cluster:9200 --index test --version ESv8
+    # Compare Ids between ESv5 and Esv8
+    python ./upgrade-script/scan-ids-compare-script.py 
     '''
     parser = argparse.ArgumentParser(description="Index into Elasticsearch using this script")
     parser.add_argument('-e', '--es', dest='es', default="http://localhost:9200", help='host source')
     parser.add_argument('-i', '--index', dest='index', default="test", help='index name')
+    parser.add_argument('-v', '--version', dest='version', default="ESv5", help='version of ES')
     args = parser.parse_args()
     
     if args.es:
@@ -164,6 +168,9 @@ if __name__ == "__main__":
 
     if args.index:
         index = args.index
+
+    if args.version:
+        version = args.version
         
     # --
     # Only One process we can use due to 'Global Interpreter Lock'
