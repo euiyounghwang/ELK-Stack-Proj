@@ -12,6 +12,7 @@ import pandas as pd
 from threading import Thread
 from Search_Engine import Search
 import logging
+from tqdm import tqdm
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -78,7 +79,10 @@ def work():
 
         ''' Merge JSON'''
         ''' Check ESv8 Ids from Esv5'''
-        for k in ESv8_Json.keys():
+        print(f"\n")
+        logging.info(f"Check the ESv8 Keys..")
+        # for k in ESv8_Json.keys():
+        for k in tqdm(ESv8_Json.keys(), desc="Processing keys for ESv8"):
             ''' Ignore if id exists both ES clusters'''
             # if k in ESv5_list:
             #     ES_Merged_Json.update({
@@ -96,7 +100,10 @@ def work():
                 })
 
         ''' Check ESv5 from ESv8'''
-        for k in ESv5_list:
+        print(f"\n")
+        logging.info(f"Check the ESv5 Keys..")
+        # for k in ESv5_list:
+        for k in tqdm(ESv5_list, desc="Processing Keys for ESv5"):
             if k not in ESv8_Json.keys():
                 ES_Merged_Json.update({
                     k : {
@@ -105,11 +112,14 @@ def work():
                         }
                 })
 
-        logging.info(json.dumps(ES_Merged_Json, indent=2))
+        # logging.info(json.dumps(ES_Merged_Json, indent=2))
 
         ''' Generate list'''
         idx_name, ids_list, df_es_v5, df_es_v8 = [], [], [], []
-        for k, v in ES_Merged_Json.items():
+        print(f"\n")
+        logging.info(f"Check and compare the Esv5 and ESv8 Keys..")
+        # for k, v in ES_Merged_Json.items():
+        for k, v in tqdm(ES_Merged_Json.items(), total=len(ES_Merged_Json), desc="Processing records diff for ESv5 and ESv8", unit="item"):
             idx_name.append(IDX_NAME)
             ids_list.append(k)
             df_es_v5.append(v.get("ESv5"))
@@ -151,6 +161,7 @@ if __name__ == "__main__":
     
     '''
     # Extract Ids from the source cluser
+    
     python ./upgrade-script/scan-search-all-script.py --es http://source_es_cluster:9200 --index test --version ESv8
     # Compare Ids between ESv5 and Esv8
     python ./upgrade-script/scan-ids-compare-script.py 

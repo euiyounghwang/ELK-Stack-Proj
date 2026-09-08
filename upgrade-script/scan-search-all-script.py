@@ -92,35 +92,28 @@ def work(es_source_client, index_name):
     es_obj_s = Search(host=es_source_client)
     es_client = es_obj_s.get_es_instance()
 
+    # query = {
+    #     "_source": False,
+	#     'query': {
+    # 	    'match_all': {}
+    #     }
+    # }
+
     query = {
-        "_source": False,
-	    'query': {
-    	    'match_all': {}
+            "_source": False,
+            "query": {
+                "bool": {
+                "must": [
+                    {
+                        "range": {
+                            "ADDTS": {
+                            "lte": "now-1h"
+                            }
+                        }
+                    }
+                ]
+            }
         }
-        # "query": {
-        #     "bool": {
-        #         "must": [
-        #             {
-        #                 "range": {
-        #                     "ADDTS": {
-        #                     "gte": "08/10/2020",
-        #                     "lte": "12/07/2024",
-        #                     "format": "MM/dd/yyyy"
-        #                     }
-        #                 }
-        #             },
-        #             {
-        #                 "range": {
-        #                     "EDITTS": {
-        #                         "gte": "01/01/2022",
-        #                         "lte": "12/21/2022",
-        #                         "format": "MM/dd/yyyy"
-        #                 }
-        #             }
-        #           }
-        #         ]
-        #     }
-        # }
     }
 
     output_clear()
