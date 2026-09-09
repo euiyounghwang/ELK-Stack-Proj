@@ -22,6 +22,9 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 path = os.path.dirname(os.path.abspath(__file__)) + '/output'
 file_output = path + "/validation_docs"
 
+
+real_time =False
+
 def work(es_source_client, es_target_client):
     '''
     Validate a list of indices from the source cluster and compare them to target cluster
@@ -164,7 +167,7 @@ def work(es_source_client, es_target_client):
                                         each_index : {
                                             "source_docs" : "%s" % res_count_source,
                                             "target_docs" : "%s" % res_count_target,
-                                             "count" : "Same"
+                                             "count" : "Diff"
                                             }
                                     }
                             )
@@ -223,7 +226,8 @@ def work(es_source_client, es_target_client):
     export_file(es_source_client, es_target_client, different_doc)
     print('-'*50)
     print('\n')
-    
+
+    return df.to_json(orient='records')
 
 
 if __name__ == "__main__":
