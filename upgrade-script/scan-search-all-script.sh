@@ -27,6 +27,7 @@ echo "Retrieve all records from ESv5 or ESv8"
 source_es_cluster=$1
 target_es_cluster=$2
 param_index=$3
+basic_auth=$4
 
 # Run
 # Change .env for the authenication
@@ -36,7 +37,7 @@ param_index=$3
 echo "Retrive all records from ESv5 ($source_es_cluster)"
 python ./upgrade-script/scan-search-all-script.py --es $source_es_cluster --index $param_index --version ESv5
 echo "Retrive all records from ESv8 ($target_es_cluster)"
-python ./upgrade-script/scan-search-all-script.py --es $target_es_cluster --index $param_index --version ESv8
+python ./upgrade-script/scan-search-all-script.py --es $target_es_cluster --index $param_index --version ESv8 --t_auth $basic_auth
 
 
 # Then,

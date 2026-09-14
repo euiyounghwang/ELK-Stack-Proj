@@ -6,6 +6,7 @@
 - __Installation Commands__
     - docker run -it --name python3.9-alpine python:3.9.0-alpine
     - docker exec -it <container_name_or_id> /bin/bash
+    - docker exec -u root -it python3.11.10-alpine sh
     - $ docker exec -it python3.9-alpine sh
      ```bash
     / # ls

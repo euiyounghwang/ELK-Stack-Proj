@@ -120,25 +120,27 @@ def work(es_source_client, index_name):
 
     batch_size = 10000
 
-    response = helpers.scan(client=es_client, 
-                              query=query, 
-                              index=index_name,
-                              size=batch_size,
-                              scroll='60m',
-                              request_timeout=1800000)
-    
-    '''
-    response = scroll_API(index='wx_loc_10052020_20_5_1', body=query)
-    '''
+    ''' Retrieve all records for multiple index'''
+    for each_index in index_name.split(","):
+        response = helpers.scan(client=es_client, 
+                                query=query, 
+                                index=each_index,
+                                size=batch_size,
+                                scroll='60m',
+                                request_timeout=1800000)
+        
+        '''
+        response = scroll_API(index='wx_loc_10052020_20_5_1', body=query)
+        '''
 
-    query_ids_from_es = list(set(r['_id'] for r in response))
-    query_ids_from_es.sort()
-    export_file(index, query_ids_from_es)
+        query_ids_from_es = list(set(r['_id'] for r in response))
+        query_ids_from_es.sort()
+        export_file(each_index, query_ids_from_es)
 
-    print('-'*50)
-    print(f"docs : {len(query_ids_from_es)}")
-    print('Created..')
-    print('-'*50)
+        print('-'*50)
+        print(f"docs : {len(query_ids_from_es)}")
+        print('Created..')
+        print('-'*50)
     
 
 
@@ -147,7 +149,7 @@ if __name__ == "__main__":
     '''
     # Extract Ids from the source cluser
     python ./upgrade-script/scan-search-all-script.py --es http://source_es_cluster:9200 --index test --version ESv5
-    python ./upgrade-script/scan-search-all-script.py --es https://source_es_cluster:9200 --index test --version ESv8
+    python ./upgrade-script/scan-search-all-script.py --es https://source_es_cluster:9200 --index test --version ESv8 --t_auth AA
     # Compare Ids between ESv5 and Esv8
     python ./upgrade-script/scan-ids-compare-script.py 
     '''
@@ -155,6 +157,7 @@ if __name__ == "__main__":
     parser.add_argument('-e', '--es', dest='es', default="http://localhost:9200", help='host source')
     parser.add_argument('-i', '--index', dest='index', default="test", help='index name')
     parser.add_argument('-v', '--version', dest='version', default="ESv5", help='version of ES')
+    parser.add_argument('-t_auth', '--t_auth', dest='t_auth', required=False, help='basic authentications')
     args = parser.parse_args()
     
     if args.es:
@@ -165,7 +168,11 @@ if __name__ == "__main__":
 
     if args.version:
         version = args.version
-        
+
+    if args.t_auth:
+        # dotenv.set_key(dotenv_file, "BASIC_AUTH", "Basic {}".format(args.t_auth))
+        os.environ["BASIC_AUTH"] = "Basic {}".format(args.t_auth)
+
     # --
     # Only One process we can use due to 'Global Interpreter Lock'
     # 'Multiprocessing' is that we can use for running with multiple process
