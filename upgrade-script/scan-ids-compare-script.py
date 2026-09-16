@@ -85,7 +85,7 @@ def work():
         ''' Merge JSON'''
         ''' Check ESv8 Ids from Esv5'''
         print(f"\n")
-        logging.info(f"Check the ESv8 Keys..")
+        logging.info(f"Check the ESv5 and ESv8 Keys..")
         # for k in ESv8_Json.keys():
         """
         for k in tqdm(ESv8_Json.keys(), desc="Processing keys for ESv8"):
@@ -124,11 +124,11 @@ def work():
         # print(list(ESv8_Json.keys()))
         ESv5_exist = list(set(ESv5_list) - set(ESv8_Json.keys()))
         # print(ESv5_exist)
-        for k in tqdm(ESv5_exist, desc="Processing Keys for ESv5"):
+        for k in tqdm(ESv5_exist, desc="Processing Keys for ESv5", colour='white'):
             ES_Merged_Json[k] = {"ESv5" : "O", "ESv8" : "X"}
 
         ESv8_exist = list(set(ESv8_Json.keys()) - set(ESv5_list))
-        for k in tqdm(ESv8_exist, desc="Processing Keys for ESv5"):
+        for k in tqdm(ESv8_exist, desc="Processing Keys for ESv5", colour='white'):
             ES_Merged_Json[k] = {"ESv5" : "X", "ESv8" : "O"}
 
         ''' Generate list'''
@@ -136,11 +136,11 @@ def work():
         print(f"\n")
         logging.info(f"Check and compare the Esv5 and ESv8 Keys..")
 
-        print(ES_Merged_Json)
+        # print(ES_Merged_Json)
         # for k, v in ES_Merged_Json.items():
-        for k, v in tqdm(ES_Merged_Json.items(), total=len(ES_Merged_Json), desc="Processing records diff for ESv5 and ESv8", unit="item"):
+        for k, v in tqdm(ES_Merged_Json.items(), total=len(ES_Merged_Json), colour='white', desc="Processing records diff for ESv5 and ESv8", unit="item"):
             # idx_name.append(IDX_NAME)
-            print(k)
+            # print(k)
             idx_name.append(k.split(",")[0])
             # ids_list.append(k)
             ids_list.append(k.split(",")[1])
@@ -161,6 +161,8 @@ def work():
 
         df = pd.DataFrame(data)
         # df = df.sort_values(by=['index_name',], ascending=False)
+        # 💡 .head()를 먼저 쓰고, 그 뒤에 .style을 붙입니다.
+        # df = df.head(100).style.set_properties(**{'text-align': 'center'})
         print('\n\n')
         print("**")
         print(df.head(100))
