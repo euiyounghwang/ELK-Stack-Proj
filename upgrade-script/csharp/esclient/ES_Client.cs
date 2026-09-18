@@ -212,11 +212,11 @@ public class ElasticsearchConnection
                 // #1
                 // Distinguished name (DN) is a term that describes the identifying information in a certificate and is part of the certificate itself.
                 // Check if the certificate from the remote secure ES cluster is the expected CA 
-                // if (certificate.Issuer == caCert.Subject)
-                // {
-                //     Console.WriteLine($"caCert : [{caCert}]");
-                //     return true;
-                // }
+                if (certificate.Issuer == caCert.Subject)
+                {
+                    Console.WriteLine($"caCert : [{caCert}]");
+                    return true;
+                }
 
                 // return false; // Reject if validation fails
 
@@ -230,20 +230,21 @@ public class ElasticsearchConnection
                 // return customChain.Build(serverCert2);
 
                 // #3
+                // Good Works
                 // using System.Net.Security;
-                if (sslPolicyErrors  == SslPolicyErrors.RemoteCertificateChainErrors)
-                {
-                    using var customRootCa = new X509Certificate2(caCert);
-                    using var chainCustom = new X509Chain();
+                // if (sslPolicyErrors  == SslPolicyErrors.RemoteCertificateChainErrors)
+                // {
+                //     using var customRootCa = new X509Certificate2(caCert);
+                //     using var chainCustom = new X509Chain();
                     
-                    // Configure the chain to only trust our explicit CA file
-                    chainCustom.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
-                    chainCustom.ChainPolicy.CustomTrustStore.Add(customRootCa);
-                    chainCustom.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                //     // Configure the chain to only trust our explicit CA file
+                //     chainCustom.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+                //     chainCustom.ChainPolicy.CustomTrustStore.Add(customRootCa);
+                //     chainCustom.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
 
-                    // Re-evaluate the server certificate against our temporary trust store
-                    return chainCustom.Build((X509Certificate2)certificate);
-                }
+                //     // Re-evaluate the server certificate against our temporary trust store
+                //     return chainCustom.Build((X509Certificate2)certificate);
+                // }
 
                 return false;
 
