@@ -196,9 +196,10 @@ def work(es_source_client, es_target_client):
     all_docs_df.update({"Source Count" : source_cnt})
     all_docs_df.update({"target_cluster" : str(target_cluter)})
     all_docs_df.update({"Target Count" : target_cnt})
-    all_docs_df.update({"Reindex Completed" : index_value})
+    all_docs_df.update({"Sync ESv5 with ESv8" : index_value})
 
     df = pd.DataFrame.from_dict(all_docs_df)
+    df = df.sort_values(by=['Index_Name',], ascending=False)
     print(df.head(100))
     ''' *** df ***'''
 

@@ -160,7 +160,7 @@ def work():
         }
 
         df = pd.DataFrame(data)
-        # df = df.sort_values(by=['index_name',], ascending=False)
+        df = df.sort_values(by=['index_name',], ascending=False)
         # 💡 .head()를 먼저 쓰고, 그 뒤에 .style을 붙입니다.
         # df = df.head(100).style.set_properties(**{'text-align': 'center'})
         print('\n\n')
