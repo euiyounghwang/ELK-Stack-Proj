@@ -28,6 +28,13 @@ real_time =False
 def work(es_target_client, enable_settings):
     '''
     PUT Settings to the ES cluster
+
+    all_settings_body = {
+        "index": {
+            "refresh_interval": "30s",    # 기본 1s에서 30s로 연장
+            "number_of_replicas": 1       # 모든 인덱스의 레플리카 수를 1로 통일
+        }
+    }
     '''
     es_target_client = es_target_client.replace('\r','')
     
@@ -45,8 +52,8 @@ def work(es_target_client, enable_settings):
         }
     else:
         slowlog_settings = {
-                    "index.search.slowlog.threshold.query.warn": None,
-                    "index.search.slowlog.threshold.fetch.warn": None
+            "index.search.slowlog.threshold.query.warn": None,
+            "index.search.slowlog.threshold.fetch.warn": None
         } 
 
     try:
