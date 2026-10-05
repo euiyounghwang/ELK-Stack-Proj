@@ -99,6 +99,7 @@ def work(es_source_client, index_name):
     #     }
     # }
 
+    ''' Extract all docs from 1 hour ago'''
     query = {
             "_source": False,
             "query": {
@@ -115,6 +116,26 @@ def work(es_source_client, index_name):
             }
         }
     }
+
+    ''' Extract all docs from 1 hour ago'''
+    # query = {
+    #         "_source": False,
+    #             "query": {
+    #                 "bool": {
+    #                 "must": [
+    #                 {
+    #                     "range": {
+    #                         "ADDTS": {
+    #                              "gte": "now-600d",
+    #                              "lte": "now-2d"
+    #                         }
+    #                     }
+    #                 }
+    #             ]
+    #         }
+    #     }
+    # }
+    
 
     output_clear()
 
