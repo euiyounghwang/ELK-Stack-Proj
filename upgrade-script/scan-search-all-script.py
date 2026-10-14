@@ -126,8 +126,8 @@ def work(es_source_client, index_name):
     #                 {
     #                     "range": {
     #                         "ADDTS": {
-    #                              "gte": "now-600d",
-    #                              "lte": "now-2d"
+    #                              "gte": "now-120d",
+    #                              "lte": "now-1h"
     #                         }
     #                     }
     #                 }
