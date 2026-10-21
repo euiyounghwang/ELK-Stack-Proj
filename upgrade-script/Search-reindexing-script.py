@@ -128,7 +128,7 @@ def work(es_source_client, es_target_client, es_version, src_idx, dest_idx, inde
     # es_obj_t.create_index(dest_idx)
     
     # es_obj_t.buffered_df_to_es(df=pd.DataFrame.from_dict(rs['hits']['hits']), _index=dest_idx)
-    es_obj_t.buffered_json_to_es(raw_json=rs['hits']['hits'], _index=dest_idx, _type=index_type, version=int(es_version))
+    es_obj_t.buffered_json_to_es(raw_json=rs['hits']['hits'], _index=dest_idx, _type=index_type, version=int(es_version), batch_size=int(batch_size))
     
     while True:
         try:
@@ -137,7 +137,7 @@ def work(es_source_client, es_target_client, es_version, src_idx, dest_idx, inde
             rs = es_client.scroll(scroll_id=scroll_id, scroll=scroll_time)
             if len(rs['hits']['hits']) > 0:
                 # logging.info(rs['hits']['hits'])
-                es_obj_t.buffered_json_to_es(raw_json=rs['hits']['hits'], _index=dest_idx, _type=index_type, version=int(es_version))
+                es_obj_t.buffered_json_to_es(raw_json=rs['hits']['hits'], _index=dest_idx, _type=index_type, version=int(es_version), batch_size=int(batch_size))
                 total_progressing += int(batch_size)
                 logging.info(f'Ingest data .. [_shards_num {_shards_num}]: {str(total_progressing)}')
             else:
