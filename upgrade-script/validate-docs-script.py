@@ -213,7 +213,7 @@ def work(es_source_client, es_target_client):
         'source_total_cnt' : [f"{sum(source_cnt):,}"],
         'target_es_cluster' : list(set(target_cluter)),
         'target_total_cnt' : [f"{sum(target_cnt):,}"],
-        'is_same?' : ['Same' if sum(source_cnt) == sum(target_cnt) else 'Different']
+        'is_same?' : ['Same' if sum(source_cnt) == sum(target_cnt) and all(index_value) else 'Different']
     })
     print(df.head(100))
 
