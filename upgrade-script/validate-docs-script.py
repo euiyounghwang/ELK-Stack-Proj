@@ -196,7 +196,7 @@ def work(es_source_client, es_target_client):
     all_docs_df.update({"Source Count" : source_cnt})
     all_docs_df.update({"target_cluster" : str(target_cluter)})
     all_docs_df.update({"Target Count" : target_cnt})
-    all_docs_df.update({"Sync ESv5 with ESv8" : index_value})
+    all_docs_df.update({"Sync_ESv5_with_ESv8" : index_value})
 
     df = pd.DataFrame.from_dict(all_docs_df)
     df = df.sort_values(by=['Index_Name',], ascending=False)
@@ -207,15 +207,26 @@ def work(es_source_client, es_target_client):
     if not real_time:
         print('** Since data is being processed in real-time across both ESv5 and ESv8, this script gets the document counts for each index as they stood one hour ago using "ADDTTS" field')
         print('** When comparing data from an hour ago, document counts may temporarily differ due to record deletions; please try running the comparision script again when doc counts is differ\n\n')
+    print(f"** query : {query}\n\n")
 
-    df = pd.DataFrame({
+    summary_df = pd.DataFrame({
         'source_es_cluster' : list(set(source_cluter)),
         'source_total_cnt' : [f"{sum(source_cnt):,}"],
         'target_es_cluster' : list(set(target_cluter)),
         'target_total_cnt' : [f"{sum(target_cnt):,}"],
-        'is_same?' : ['Same' if sum(source_cnt) == sum(target_cnt) and all(index_value) else 'Different']
+        'is_same?' : ['Same' if sum(source_cnt) == sum(target_cnt) and all(index_value) else 'Different'],
+        'DATA_SYNC' : [True if sum(source_cnt) == sum(target_cnt) and all(index_value) else False]
     })
-    print(df.head(100))
+    print(summary_df.head(100))
+
+    ''' Check df that countainds count are not matching..'''
+    if detail_indices:
+        differ_df = df[df['Sync_ESv5_with_ESv8'] != True]
+        if not differ_df.empty:
+            print('\n')
+            print(f"Summary of different ES Indices between ESv5 and ESv8")
+            print(differ_df.head(100))
+            print('-'*50)
 
     
     ''' clear output file'''
@@ -234,8 +245,7 @@ def work(es_source_client, es_target_client):
 if __name__ == "__main__":
     
     '''
-    (.venv) ➜  python ./upgrade-script/validate-docs-script.py --es http://source_es_cluster:9200 --ts http://target_es_cluster:9201
-    (.venv) ➜  python ./upgrade-script/validate-docs-script.py --es http://source_es_cluster:9200 --ts http://target_es_cluster:9201 --t_auth base_encode_auth_value
+    (.venv) ➜  python ./upgrade-script/validate-docs-script.py --es http://source_es_cluster:9200 --ts http://target_es_cluster:9201 --t_auth base_encode_auth_value --detail_indices true --r_time true
 
     --
     You cannot directly compare records from specific indices across ESv5 and ESv8 clusters. 
@@ -249,6 +259,7 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--ts', dest='ts', default="http://localhost:9201", help='host target')
     parser.add_argument('-r_time', '--r_time', dest='r_time', default="False", required=False, help='is real-time?')
     parser.add_argument('-t_auth', '--t_auth', dest='t_auth', required=False, help='basic authentications')
+    parser.add_argument('-detail_indices', '--detail_indices', dest='detail_indices', default="False", required=False, help='show different ES indices again')
     args = parser.parse_args()
 
     if args.es:
@@ -264,11 +275,15 @@ if __name__ == "__main__":
     if args.r_time:
         real_time = args.r_time
 
+    if args.detail_indices:
+       detail_indices = args.detail_indices
+
 
     print(os.getenv('BASIC_AUTH'))
     # exit(1)
 
     real_time = True if str(real_time).upper() == "TRUE" else False
+    detail_indices = True if str(detail_indices).upper() == "TRUE" else False
 
     # --
     # Only One process we can use due to 'Global Interpreter Lock'
