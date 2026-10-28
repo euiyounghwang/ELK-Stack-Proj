@@ -59,7 +59,8 @@ def work(es_source_client, index_name):
         page = es_client.search(index=index
                         ,body=body
                         ,scroll=_KEEP_ALIVE_LIMIT
-                        ,size=10000
+                        ,size=10000,
+                        preference="_primary" 
                         # ,track_total_hits=True
                         )
         sid = page['_scroll_id']
@@ -108,7 +109,8 @@ def work(es_source_client, index_name):
                     {
                         "range": {
                             "ADDTS": {
-                            "lte": "now-1h"
+                            #    "gte": "now-100h",
+                               "lte": "now-1h"
                             }
                         }
                     }
