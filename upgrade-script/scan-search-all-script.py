@@ -109,8 +109,13 @@ def work(es_source_client, index_name):
                     {
                         "range": {
                             "ADDTS": {
-                            #    "gte": "now-100h",
-                               "lte": "now-1h"
+                            #    "gte": "now-48h",
+                            #    "lte": "now-24h"
+                            #    "lte": "now-1h"
+                            #  "gte": "now-200d/d",
+                            #  "lte": "now-100d/d"
+                            #  "gte": "now-100d/d",
+                             "lte": "now-1d/d"
                             }
                         }
                     }
@@ -144,12 +149,15 @@ def work(es_source_client, index_name):
     batch_size = 10000
 
     ''' Retrieve all records for multiple index'''
+    # _preference= "_primary" if 'http://' in es_source_client else "my_custom_session_string"
     for each_index in index_name.split(","):
         response = helpers.scan(client=es_client, 
                                 query=query, 
                                 index=each_index,
                                 size=batch_size,
                                 scroll='60m',
+                                # preference=_preference, 
+                                raise_on_error=True,
                                 request_timeout=1800000)
         
         '''
