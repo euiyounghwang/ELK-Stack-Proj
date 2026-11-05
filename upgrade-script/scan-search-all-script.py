@@ -113,9 +113,12 @@ def work(es_source_client, index_name):
                             #    "lte": "now-24h"
                             #    "lte": "now-1h"
                             #  "gte": "now-200d/d",
-                            #  "lte": "now-100d/d"
-                            #  "gte": "now-100d/d",
-                             "lte": "now-1d/d"
+                            # "gte": "now-1d/d",
+                            #  "gte": "now-600d/d",
+                            #  "lte": "now-1d/d"
+                            # "lte": "now"
+                            "gte": "now-3d/d",
+                            "lte": "now-1h/h"
                             }
                         }
                     }
